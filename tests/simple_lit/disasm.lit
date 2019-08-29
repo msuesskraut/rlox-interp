@@ -1,6 +1,0 @@
-RUN: cargo run
-
-CHECK: == test ==
-CHECK: 0000   12 OP_CONSTANT     Number(42.0)
-CHECK: 0001    | OP_CONSTANT     Number(23.0)
-CHECK: 0002   13 OP_RETURN
