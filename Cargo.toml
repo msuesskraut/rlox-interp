@@ -8,5 +8,6 @@ edition = "2018"
 
 [dependencies]
 
-[dev-dependencies]
+derive_builder = "0.7.2"
 
+[dev-dependencies]

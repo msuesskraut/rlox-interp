@@ -1,13 +1,26 @@
 use std::process::{Command, Output};
 use std::str::from_utf8;
+use derive_builder::Builder;
 
 const CRATE_PATH: &str = env!("CARGO_MANIFEST_DIR");
 
-pub struct LitTest {
-    pub cmd: String,
-    pub args: Vec<String>,
-    pub checks: Vec<String>,
+#[derive(Builder)]
+pub struct LitTester {
+    #[builder(setter(into))]
+    cmd: String,
+    #[builder(default = "vec![]")]
+    args: Vec<String>,
+    #[builder(default = "vec![]")]
+    checks: Vec<String>,
 }
+
+impl LitTesterBuilder {
+    pub fn test(&self) {
+        self.build().expect("LitTest incomplete").test()
+    }
+}
+
+pub type LitTest = LitTesterBuilder;
 
 type LitError = Vec<String>;
 
@@ -32,7 +45,7 @@ fn rec_check_output(checks: &[String], stdout: &str, errs: &mut Vec<String>) {
     // else: end recursion
 }
 
-impl LitTest {
+impl LitTester {
     fn run_command(&self) -> Result<Output, LitError> {
         let res = Command::new(&self.cmd)
             .current_dir(CRATE_PATH)
@@ -96,7 +109,7 @@ mod test {
 
     #[test]
     fn run_command_success() -> Result<(), LitError> {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "cargo".into(),
             args: vec!["help".into()],
             checks: Vec::new(),
@@ -110,7 +123,7 @@ mod test {
 
     #[test]
     fn run_command_failed_no_success() -> Result<(), Output> {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "cargo".into(),
             args: vec!["holp".into()],
             checks: Vec::new(),
@@ -124,7 +137,7 @@ mod test {
 
     #[test]
     fn run_command_failed_os_error() -> Result<(), Output> {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "command_does_not_exist".into(),
             args: vec![],
             checks: Vec::new(),
@@ -144,8 +157,8 @@ mod test {
             .status
     }
 
-    fn dummy_lit_test() -> LitTest {
-        LitTest {
+    fn dummy_lit_test() -> LitTester {
+        LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec![],
@@ -178,7 +191,7 @@ mod test {
 
     #[test]
     fn run_test_success() -> Result<(), LitError> {
-        LitTest {
+        LitTester {
             cmd: "cargo".into(),
             args: vec!["help".into()],
             checks: vec![],
@@ -188,7 +201,7 @@ mod test {
 
     #[test]
     fn run_test_failed() {
-        LitTest {
+        LitTester {
             cmd: "cargo".into(),
             args: vec!["holp".into()],
             checks: vec![],
@@ -199,7 +212,7 @@ mod test {
 
     #[test]
     fn test_success() {
-        LitTest {
+        LitTester {
             cmd: "cargo".into(),
             args: vec!["help".into()],
             checks: vec![],
@@ -210,7 +223,7 @@ mod test {
     #[should_panic]
     #[test]
     fn test_fails() {
-        LitTest {
+        LitTester {
             cmd: "cargo".into(),
             args: vec!["holp".into()],
             checks: vec![],
@@ -253,7 +266,7 @@ mod test {
 
     #[test]
     fn check_output_empty_checks() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec![],
@@ -264,7 +277,7 @@ mod test {
 
     #[test]
     fn check_output_first_check_fails() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["the".into()],
@@ -278,7 +291,7 @@ mod test {
 
     #[test]
     fn check_output_one_check() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["lo".into()],
@@ -289,7 +302,7 @@ mod test {
 
     #[test]
     fn check_output_two_checks() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["lo".into(), "orl".into()],
@@ -300,7 +313,7 @@ mod test {
 
     #[test]
     fn check_output_two_checks_adjecent() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["lo".into(), " wo".into()],
@@ -311,7 +324,7 @@ mod test {
 
     #[test]
     fn check_output_two_checks_wrong_order() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["wo".into(), "lo".into()],
@@ -324,7 +337,7 @@ mod test {
 
     #[test]
     fn check_output_two_checks_only_first_fails() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["al".into(), "lo".into()],
@@ -337,7 +350,7 @@ mod test {
 
     #[test]
     fn check_output_three_checks_middle_fails() {
-        let lt = LitTest {
+        let lt = LitTester {
             cmd: "".into(),
             args: vec![],
             checks: vec!["el".into(), "el".into(), "lo".into()],
@@ -346,5 +359,15 @@ mod test {
         assert_eq!(
             Err(vec!["failed to find check string: el".into()]),
             lt.check_output_stdout("hello world"));
+    }
+
+    #[test]
+    fn builder_pattern() {
+        let lt = LitTest::default()
+            .cmd("cargo")
+            .build().expect("LitTestBuilder failed");
+        assert_eq!("cargo", lt.cmd);
+        assert!(lt.args.is_empty());
+        assert!(lt.checks.is_empty());
     }
 }
