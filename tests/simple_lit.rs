@@ -9,6 +9,7 @@ fn simple_lit() {
             "== test ==".into(),
             "0000   12 OP_CONSTANT      Number(42.0)".into(),
             "0001    | OP_CONSTANT      Number(23.0)".into(),
-            "0002   13 OP_RETURN".into()])
-    .test();
+            "0002   13 OP_RETURN".into(),
+        ])
+        .test();
 }

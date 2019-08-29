@@ -1,6 +1,6 @@
+use derive_builder::Builder;
 use std::process::{Command, Output};
 use std::str::from_utf8;
-use derive_builder::Builder;
 
 const CRATE_PATH: &str = env!("CARGO_MANIFEST_DIR");
 
@@ -332,7 +332,8 @@ mod test {
 
         assert_eq!(
             Err(vec!["failed to find check string: lo".into()]),
-            lt.check_output_stdout("hello world"));
+            lt.check_output_stdout("hello world")
+        );
     }
 
     #[test]
@@ -345,7 +346,8 @@ mod test {
 
         assert_eq!(
             Err(vec!["failed to find check string: al".into()]),
-            lt.check_output_stdout("hello world"));
+            lt.check_output_stdout("hello world")
+        );
     }
 
     #[test]
@@ -358,14 +360,16 @@ mod test {
 
         assert_eq!(
             Err(vec!["failed to find check string: el".into()]),
-            lt.check_output_stdout("hello world"));
+            lt.check_output_stdout("hello world")
+        );
     }
 
     #[test]
     fn builder_pattern() {
         let lt = LitTest::default()
             .cmd("cargo")
-            .build().expect("LitTestBuilder failed");
+            .build()
+            .expect("LitTestBuilder failed");
         assert_eq!("cargo", lt.cmd);
         assert!(lt.args.is_empty());
         assert!(lt.checks.is_empty());
