@@ -8,6 +8,6 @@ edition = "2018"
 
 [dependencies]
 
-derive_builder = "0.7.2"
-
 [dev-dependencies]
+
+rlit = { git = "https://github.com/msuesskraut/rlit.git" }
